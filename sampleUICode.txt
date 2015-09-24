@@ -1,0 +1,101 @@
+
+//
+//  LoginViewController.swift
+//  Sports App
+//
+//  Created by Zaccary Gioffre on 6/13/15.
+//  Copyright (c) 2015 Zaccary Gioffre. All rights reserved.
+//
+
+import UIKit
+
+class SQL {
+
+
+    class func runSQL4JSON(urlCall: String) -> NSDictionary{
+     
+        let urlPath: String = urlCall
+        let url: NSURL = NSURL(string: urlPath)!
+        let request1: NSURLRequest = NSURLRequest(URL: url)
+        let response: AutoreleasingUnsafeMutablePointer<NSURLResponse? >= nil
+        let dataVal: NSData =  try! NSURLConnection.sendSynchronousRequest(request1, returningResponse: response)
+        let jsonResult: NSDictionary = (try! NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers)) as! NSDictionary
+        return jsonResult
+
+    }
+
+
+class LoginViewController: UIViewController {
+
+ /* override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) -> Bool {
+    
+    }*/
+  
+    @IBOutlet var txtUsername: UITextField!
+    @IBOutlet weak var txtPassword: UITextField!
+ 
+ 
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Do any additional setup after loading the view.
+        
+    }
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+ //allows return to dismiss keyboard
+    @IBAction func textFieldDoneEditing(sender: UITextField) {
+        sender.resignFirstResponder()
+    }
+    
+    @IBAction func signinTapped(sender: UIButton) {
+        //convert textfield to string
+        let username:String = txtUsername.text as String!
+        let password:String = txtPassword.text as String!
+        
+        //create back of url
+        let urlBack: String = "user/verifyUser?id="+username+"&password="+password
+        
+        //create url for login
+        let urlUserLogin = SQL.urlTemplateCreate(urlBack);
+       
+        //create json for login
+        let jsonLogin = SQL.runSQL4JSON(urlUserLogin)
+       
+        //verify username and password
+        if let parsedUsername: String = jsonLogin["userName"] as? String {
+        let parsedEmail: AnyObject? = jsonLogin["email"]
+        if  parsedUsername == username && parsedEmail != nil{
+            let defaults = NSUserDefaults.standardUserDefaults()
+            defaults.setValue(username, forKey: "username")
+            
+           performSegueWithIdentifier("segueToMenu", sender: nil)
+        
+        }
+        else {
+               //display error message if the username and password are not found 
+            //shouldnt get hit, but added for safety
+            let alertView: UIAlertView = UIAlertView()
+            alertView.title = "Login Failed!"
+            alertView.message = "Please enter correct Username and Password"
+            alertView.delegate = self
+            alertView.addButtonWithTitle("OK")
+            alertView.show()
+
+           
+            }
+            }
+    else {
+            //display error message if invalid
+    let alertView:UIAlertView = UIAlertView()
+    alertView.title = "Login Failed!"
+    alertView.message = "Please enter correct Username and Password"
+    alertView.delegate = self
+    alertView.addButtonWithTitle("OK")
+    alertView.show()
+            
+        }}
+    }
